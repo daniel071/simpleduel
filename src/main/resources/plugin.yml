@@ -1,0 +1,21 @@
+name: Simpleduel
+version: ${project.version}
+main: net.pavela.simpleduel.simpleduel.Simpleduel
+api-version: 1.17
+authors: [ Daniel ]
+description: Simple Arena PVP plugin with /duel
+website: pavela.net
+
+commands:
+  duel:
+    description: Send a duel request to a player
+    usage: /duel <player>
+    permission: simpleduel.duel
+  duelaccept:
+    description: Accept a player duel
+    usage: /duelaccept
+    permission: simpleduel.duel.accept
+  worldtp:
+    description: Teleport to a different world
+    usage: /worldtp <world>
+    permission: simpleduel.tp
