@@ -11,11 +11,14 @@ commands:
     description: Send a duel request to a player
     usage: /duel <player>
     permission: simpleduel.duel
+    default: true
   duelaccept:
     description: Accept a player duel
     usage: /duelaccept
     permission: simpleduel.duel.accept
+    default: true
   worldtp:
     description: Teleport to a different world
     usage: /worldtp <world>
     permission: simpleduel.tp
+    default: op

@@ -107,11 +107,13 @@ public final class Simpleduel extends JavaPlugin {
 
             if (sender instanceof Player) {
                 Player player = (Player) sender;
+                if (duelRequests.isEmpty()) {
+                    player.sendMessage(ChatColor.RED + "There are no duel requests.");
+                } else {
+                    player.sendMessage(ChatColor.GREEN + "Duel request accepted! Teleporting in 5 seconds.");
 
-                player.sendMessage(ChatColor.GREEN + "Duel request accepted! Teleporting in 5 seconds.");
-
-                runFunction(player);
-
+                    runFunction(player);
+                }
             }
 
             return true;
