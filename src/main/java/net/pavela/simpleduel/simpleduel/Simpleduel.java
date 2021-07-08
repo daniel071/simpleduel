@@ -7,11 +7,14 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Listener;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+
 
 /*
 arena 1 player 1: 8 1 35
@@ -29,9 +32,26 @@ public final class Simpleduel extends JavaPlugin {
     Server server = getServer();
     Boolean arenaOccupied = false;
     ConsoleCommandSender console = server.getConsoleSender();
-    String version = "0.0.3";
-    public ArrayList<ArrayList<Player>> duelRequests = new ArrayList<ArrayList<Player>>();
+    String version = "0.1.0";
+    public ArrayList<ArrayList<Player>> duelRequests = new ArrayList<>();
+    public ArrayList<ArrayList<Player>> currentDuels = new ArrayList<>();
+    public ArrayList<ArrayList<Object>> playerData = new ArrayList<>();
+    public ArrayList<Player> playerTPQueue = new ArrayList<>();
+    HashMap<Player, ItemStack[]> inventories = new HashMap<Player, ItemStack[]>();
     World arenaWorld = Bukkit.getWorld("arena");
+
+    public void savePlayer(Player p){
+        inventories.put(p, p.getInventory().getContents());
+    }
+
+    public ItemStack[] getSavedPlayerInventory(Player p){
+
+        if(inventories.containsKey(p)){
+            return inventories.get(p);
+        }
+
+        return new ItemStack[0];
+    }
 
     public class teleportWorld implements CommandExecutor {
 
@@ -100,14 +120,51 @@ public final class Simpleduel extends JavaPlugin {
 
 
     public class MyListener implements Listener {
-    //        @EventHandler
-    //        public void onDeath(PlayerDeathEvent event) {
-    //            if (event.getEntity().getWorld().equals(arenaWorld)) {
-    //                Player player = event.getPlayer();
-    //                player.teleport(new Location(arenaWorld, 1701, 12, -1027));
-    //            }
-    //
-    //        }
+        @EventHandler
+        public void onPlayerDeath(PlayerDeathEvent event) {
+            if (event.getEntity().getWorld().equals(arenaWorld)) {
+                Player playerLost = event.getEntity();
+                Player playerWon = null;
+
+                ArrayList<ArrayList<Player>> currentDuelsTemp = new ArrayList<>(currentDuels);
+                for (ListUtils.EnumeratedItem<ArrayList<Player>> selectedPlayer :  ListUtils.enumerate(currentDuelsTemp)) {
+                    if (selectedPlayer.item.get(0) == playerLost) {
+                        playerWon = selectedPlayer.item.get(1);
+                        currentDuels.remove(selectedPlayer.index);
+                    } else {
+                        playerWon = selectedPlayer.item.get(0);
+                    }
+                }
+
+                ArrayList<ArrayList<Player>> playerDataTemp = new ArrayList<>(currentDuels);
+                for (ListUtils.EnumeratedItem<ArrayList<Player>> selectedPlayer : ListUtils.enumerate(playerDataTemp)) {
+                    if (selectedPlayer.item.get(0) == playerWon) {
+                        playerWon.teleport((Location) selectedPlayer.item.get(1));
+                        getSavedPlayerInventory(playerWon);
+                    } else if (selectedPlayer.item.get(0) == playerLost) {
+                        playerTPQueue.add(playerLost);
+                    }
+                    playerData.remove(selectedPlayer.index);
+                }
+                Bukkit.broadcastMessage(ChatColor.BLUE + playerWon.getName() + ChatColor.GREEN + " has won the duel!");
+
+                arenaOccupied = false;
+
+            }
+
+        }
+
+        public void onPlayerRespawn(PlayerRespawnEvent event) {
+            if (!playerTPQueue.isEmpty()) {
+                for (ArrayList<Object> selectedPlayer : playerData) {
+                    if (selectedPlayer.get(0) == playerTPQueue.get(playerTPQueue.size() - 1)) {
+                        playerTPQueue.get(playerTPQueue.size() - 1).teleport((Location) selectedPlayer.get(1));
+                        getSavedPlayerInventory(playerTPQueue.get(playerTPQueue.size() - 1));
+                        playerTPQueue.remove(playerTPQueue.size() - 1);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -133,11 +190,39 @@ public final class Simpleduel extends JavaPlugin {
             Location loc1 = new Location(arenaWorld, 8, 1 ,35);
             Location loc2 = new Location(arenaWorld, -10, 1 ,35);
             // oldInvs.put(player, player.getInventory());
-            for (ArrayList<Player> selectedPlayer : duelRequests) {
-                if (selectedPlayer.get(1) == player) {
-                    selectedPlayer.get(0).teleport(loc1);
+
+            for (ListUtils.EnumeratedItem<ArrayList<Player>> selectedPlayer : ListUtils.enumerate(duelRequests)) {
+                if (selectedPlayer.item.get(1) == player) {
+                    Location playerLoc1 = (Location) selectedPlayer.item.get(0).getLocation().getBlock().getLocation();
+                    Location playerLoc2 = (Location) selectedPlayer.item.get(1).getLocation().getBlock().getLocation();
+
+                    ArrayList<Object> playerData1 = new ArrayList<>();
+                    playerData1.add(selectedPlayer.item.get(0));
+                    playerData1.add(playerLoc1);
+                    playerData.add(playerData1);
+
+                    ArrayList<Object> playerData2 = new ArrayList<>();
+                    playerData1.add(selectedPlayer.item.get(1));
+                    playerData1.add(playerLoc2);
+                    playerData.add(playerData1);
+
+                    savePlayer(selectedPlayer.item.get(0));
+                    savePlayer(selectedPlayer.item.get(1));
+
+                    selectedPlayer.item.get(0).getInventory().clear();
+                    selectedPlayer.item.get(1).getInventory().clear();
+
+                    selectedPlayer.item.get(0).teleport(loc1);
                     player.teleport(loc2);
                     arenaOccupied = true;
+
+                    ArrayList<Player> tempList = new ArrayList<>();
+                    tempList.add(selectedPlayer.item.get(0));
+                    tempList.add(selectedPlayer.item.get(1));
+                    currentDuels.add(tempList);
+
+                    duelRequests.remove(selectedPlayer.index);
+
                     break;
                 }
             }
