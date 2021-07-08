@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Listener;
 
@@ -32,13 +33,14 @@ public final class Simpleduel extends JavaPlugin {
     Server server = getServer();
     Boolean arenaOccupied = false;
     ConsoleCommandSender console = server.getConsoleSender();
-    String version = "0.1.0";
     public ArrayList<ArrayList<Player>> duelRequests = new ArrayList<>();
     public ArrayList<ArrayList<Player>> currentDuels = new ArrayList<>();
     public ArrayList<ArrayList<Object>> playerData = new ArrayList<>();
     public ArrayList<Player> playerTPQueue = new ArrayList<>();
     HashMap<Player, ItemStack[]> inventories = new HashMap<Player, ItemStack[]>();
     World arenaWorld = Bukkit.getWorld("arena");
+    PluginDescriptionFile pdf = this.getDescription();
+    String version = pdf.getVersion();
 
     public void savePlayer(Player p){
         inventories.put(p, p.getInventory().getContents());
