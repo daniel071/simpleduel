@@ -146,15 +146,21 @@ public final class Simpleduel extends JavaPlugin {
                     }
                 }
 
-                ArrayList<ArrayList<Player>> playerDataTemp = new ArrayList<>(currentDuels);
-                for (ListUtils.EnumeratedItem<ArrayList<Player>> selectedPlayer : ListUtils.enumerate(playerDataTemp)) {
+                ArrayList<ArrayList<Object>> playerDataTemp = new ArrayList<>(playerData);
+                for (ListUtils.EnumeratedItem<ArrayList<Object>> selectedPlayer : ListUtils.enumerate(playerDataTemp)) {
                     if (selectedPlayer.item.get(0) == playerWon) {
                         playerWon.teleport((Location) selectedPlayer.item.get(1));
                         getSavedPlayerInventory(playerWon);
+                        if (playerData.size() < selectedPlayer.index) {
+                            playerData.remove(selectedPlayer.index);
+                        }
+
                     } else if (selectedPlayer.item.get(0) == playerLost) {
                         playerTPQueue.add(playerLost);
+                        if (playerData.size() < selectedPlayer.index) {
+                            playerData.remove(selectedPlayer.index);
+                        }
                     }
-                    playerData.remove(selectedPlayer.index);
                 }
                 Bukkit.broadcastMessage(ChatColor.BLUE + playerWon.getName() + ChatColor.GREEN + " has won the duel!");
 
@@ -164,13 +170,16 @@ public final class Simpleduel extends JavaPlugin {
 
         }
 
+        @EventHandler
         public void onPlayerRespawn(PlayerRespawnEvent event) {
+            // TODO: this doesnt run?
             if (!playerTPQueue.isEmpty()) {
-                for (ArrayList<Object> selectedPlayer : playerData) {
-                    if (selectedPlayer.get(0) == playerTPQueue.get(playerTPQueue.size() - 1)) {
-                        playerTPQueue.get(playerTPQueue.size() - 1).teleport((Location) selectedPlayer.get(1));
+                for (ListUtils.EnumeratedItem<ArrayList<Object>> selectedPlayer : ListUtils.enumerate(playerData)) {
+                    if (selectedPlayer.item.get(0) == playerTPQueue.get(playerTPQueue.size() - 1)) {
+                        playerTPQueue.get(playerTPQueue.size() - 1).teleport((Location) selectedPlayer.item.get(1));
                         getSavedPlayerInventory(playerTPQueue.get(playerTPQueue.size() - 1));
                         playerTPQueue.remove(playerTPQueue.size() - 1);
+                        Bukkit.broadcastMessage("DEBUG: TELEPORTING" + playerTPQueue.get(playerTPQueue.size() - 1) + "TO" + selectedPlayer.item.get(1));
                     }
                 }
             }
@@ -212,9 +221,9 @@ public final class Simpleduel extends JavaPlugin {
                     playerData.add(playerData1);
 
                     ArrayList<Object> playerData2 = new ArrayList<>();
-                    playerData1.add(selectedPlayer.item.get(1));
-                    playerData1.add(playerLoc2);
-                    playerData.add(playerData1);
+                    playerData2.add(selectedPlayer.item.get(1));
+                    playerData2.add(playerLoc2);
+                    playerData.add(playerData2);
 
                     savePlayer(selectedPlayer.item.get(0));
                     savePlayer(selectedPlayer.item.get(1));
