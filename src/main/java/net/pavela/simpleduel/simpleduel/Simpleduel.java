@@ -114,6 +114,12 @@ public final class Simpleduel extends JavaPlugin {
                 } else {
                     player.sendMessage(ChatColor.GREEN + "Duel request accepted! Teleporting in 5 seconds.");
 
+                    for (ListUtils.EnumeratedItem<ArrayList<Player>> selectedPlayer : ListUtils.enumerate(duelRequests)) {
+                        if (selectedPlayer.item.get(1) == player) {
+                            selectedPlayer.item.get(0).sendMessage(ChatColor.GREEN + "The player has accepted the duel request! Teleporting in 5 seconds.");
+                        }
+                    }
+
                     runFunction(player);
                 }
             }
