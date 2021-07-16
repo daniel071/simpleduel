@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -172,17 +173,19 @@ public final class Simpleduel extends JavaPlugin {
 
         @EventHandler
         public void onPlayerRespawn(PlayerRespawnEvent event) {
-            // TODO: this doesnt run?
-            if (!playerTPQueue.isEmpty()) {
-                for (ListUtils.EnumeratedItem<ArrayList<Object>> selectedPlayer : ListUtils.enumerate(playerData)) {
-                    if (selectedPlayer.item.get(0) == playerTPQueue.get(playerTPQueue.size() - 1)) {
-                        playerTPQueue.get(playerTPQueue.size() - 1).teleport((Location) selectedPlayer.item.get(1));
-                        getSavedPlayerInventory(playerTPQueue.get(playerTPQueue.size() - 1));
-                        playerTPQueue.remove(playerTPQueue.size() - 1);
-                        Bukkit.broadcastMessage("DEBUG: TELEPORTING" + playerTPQueue.get(playerTPQueue.size() - 1) + "TO" + selectedPlayer.item.get(1));
-                    }
+            // TODO: this doesn't run?
+            Bukkit.broadcastMessage("DEBUG: PlayerRespawnEvent");
+            //if (!playerTPQueue.isEmpty()) {
+            Bukkit.broadcastMessage("DEBUG: FOR LOOP INITIATED");
+            for (ListUtils.EnumeratedItem<ArrayList<Object>> selectedPlayer : ListUtils.enumerate(playerData)) {
+                if (selectedPlayer.item.get(0) == playerTPQueue.get(playerTPQueue.size() - 1)) {
+                    playerTPQueue.get(playerTPQueue.size() - 1).teleport((Location) selectedPlayer.item.get(1));
+                    getSavedPlayerInventory(playerTPQueue.get(playerTPQueue.size() - 1));
+                    playerTPQueue.remove(playerTPQueue.size() - 1);
+                    Bukkit.broadcastMessage("DEBUG: TELEPORTING" + playerTPQueue.get(playerTPQueue.size() - 1) + "TO" + selectedPlayer.item.get(1));
                 }
             }
+            //}
         }
     }
 
